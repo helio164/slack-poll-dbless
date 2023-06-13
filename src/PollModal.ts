@@ -1,20 +1,12 @@
-import { KnownBlock, Block, PlainTextElement, InputBlock, View, Checkboxes } from "@slack/types";
-import { PollHelpers } from "./PollHelpers.js";
+const { KnownBlock, Block, PlainTextElement, InputBlock, View, Checkboxes } = require("@slack/types");
+const PollHelpers = require("./PollHelpers.js");
 
 // This will hold all currently opened modals in memory
 // It maps view id to modal object
-export const ModalMap: Map<string, PollModal> = new Map();
+module.exports.ModalMap = new Map();
 
-export class PollModal {
-  private num_options: number;
-  private title: PlainTextElement;
-  private submit: PlainTextElement;
-  private options: InputBlock[];
-  private channel_id: string;
-  private blocks: (KnownBlock | Block)[];
-
-  // Modals have no sense of channel id so we must storei t
-  constructor (channel_id: string) {
+module.exports.PollModal = class {
+  constructor (channel_id) {
     this.channel_id = channel_id;
     this.num_options = 2;
     this.options = [];
@@ -26,15 +18,14 @@ export class PollModal {
   }
 
   // Creates an additional option block
-  public addOption(): void {
+  addOption() {
     const optionString = `Option ${this.options.length + 1}`;
     const action_id = `option_${this.options.length}`;
     this.options.push(PollHelpers.buildInputElem(optionString, optionString, action_id));
   }
+  getChannelId() { return this.channel_id; }
 
-  public getChannelId(): string { return this.channel_id; }
-
-  private static constructModalCheckboxes(): Checkboxes {
+  static constructModalCheckboxes() {
     return {
       type: "checkboxes",
       action_id: "modal_checkboxes",
@@ -54,7 +45,7 @@ export class PollModal {
   }
 
   // Creates the initial modal view
-  public constructModalView(): View {
+  constructModalView() {
     this.blocks = [];
     this.blocks.push(PollHelpers.buildInputElem("Poll Title", "Title", "title"));
     this.blocks = this.blocks.concat(this.options);
@@ -75,7 +66,8 @@ export class PollModal {
     };
   }
 
-  // Takes the submission object from slack and returns poll parmaters 
+  // Takes the submission object from slack and returns poll parmaters
+  static submissionToPollParams(submittedState) {
   public static submissionToPollParams(submittedState: any): string[] {
     // This will hold the options for the poll
     const poll_options: string[] = [];

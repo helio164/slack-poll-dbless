@@ -1,19 +1,15 @@
-import { Poll } from "./Poll.js";
-import { ChatPostMessageArguments, ChatUpdateArguments, WebAPICallResult, WebClient } from "@slack/web-api";
-import { KnownBlock } from "@slack/types";
-import { Request, Response } from "express";
-import * as Sentry from "@sentry/node";
-import { PollModal, ModalMap } from "./PollModal.js";
+const Poll = require("./Poll.js");
+const { ChatPostMessageArguments, ChatUpdateArguments, WebAPICallResult, WebClient } = require("@slack/web-api");
+const { KnownBlock } = require("@slack/types");
+const { Request, Response } = require("express");
+const Sentry = require("@sentry/node");
+const { PollModal, ModalMap } = require("./PollModal.js");
 
 const errorMsg = "An error occurred; please contact the administrators for assistance.";
-
-export class Actions {
+module.exports = {
     public static readonly BUTTON_ACTION = "button";
     public static readonly STATIC_SELECT_ACTION = "static_select";
-
-    private wc: WebClient;
-
-    public constructor(slackAccessToken: string) {
+    constructor(slackAccessToken) {
         this.wc = new WebClient(slackAccessToken);
 
         // These are called in server.ts without scoping
@@ -23,23 +19,20 @@ export class Actions {
         this.createPollRoute = this.createPollRoute.bind(this);
         this.submitModal = this.submitModal.bind(this);
     }
-
-    public postMessage(channel: string, text: string, blocks: KnownBlock[]): Promise<WebAPICallResult> {
-        const msg: ChatPostMessageArguments = { channel, text, blocks };
+    postMessage(channel, text, blocks) {
+        const msg = { channel, text, blocks };
         return this.wc.chat.postMessage(msg);
     }
-
-    public async displayModal(channelId: string, triggerId: string): Promise<void> {
+    async displayModal(channelId, triggerId) {
         const modal = new PollModal(channelId);
         const response = await this.wc.views.open({
             trigger_id: triggerId,
             view: modal.constructModalView(),
         });
-        ModalMap.set((response as any).view.id, modal);
+        ModalMap.set(response.view.id, modal);
         return;
     }
-
-    public onModalAction(payload: any, res: (message: any) => Promise<unknown>): {text: string} {
+    onModalAction(payload, res) {
         const currentModal = ModalMap.get(payload.view.id);
         const actionId = payload.actions[0].action_id;
         // We don't do anything if viewID is invalid
@@ -53,12 +46,10 @@ export class Actions {
         }
         return { text: "Modal input processed" };
     }
-
-    public closeModal(viewID: string): void {
+    closeModal(viewID) {
         ModalMap.delete(viewID);
     }
-
-    public submitModal(payload: any): { response_action: string} {
+    submitModal(payload) {
         const modal = ModalMap.get(payload.view.id);
         
         if (!modal) return { response_action: "clear" };
@@ -70,8 +61,7 @@ export class Actions {
 
         return { response_action: "clear" };
     }
-
-    public onButtonAction(payload: any, res: (message: any) => Promise<unknown>): { text: string } {
+    onButtonAction(payload, res) {
         try {
             const poll = new Poll(payload.message.blocks);
             payload.actions[0].text.text = payload.actions[0].text.text.replace("&lt;","<")
@@ -87,7 +77,6 @@ export class Actions {
             return this.handleActionException(err);
         }
     }
-
     public onStaticSelectAction(payload: any, res: (message: any) => Promise<unknown>): { text: string } {
         try {
             const poll = new Poll(payload.message.blocks);

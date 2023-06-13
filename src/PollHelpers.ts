@@ -1,45 +1,39 @@
-import { Button, ContextBlock, InputBlock, PlainTextElement, PlainTextOption, SectionBlock } from "@slack/types";
+const { Button, ContextBlock, InputBlock, PlainTextElement, PlainTextOption, SectionBlock } = require("@slack/types");
 
-export class PollHelpers {
-    public static appendIfMatching(optionArray: string[], keyword: string, appendText: string): string {
+module.exports = {
+    appendIfMatching(optionArray, keyword, appendText) {
         return optionArray[0].toLowerCase() === keyword || optionArray[1].toLowerCase() === keyword ? appendText : "";
-    }
-
-    public static buildSectionBlock(mrkdwnValue: string): SectionBlock {
+    },
+    buildSectionBlock(mrkdwnValue) {
         return { type: "section", text: { type: "mrkdwn", text: mrkdwnValue } };
-    }
-
-    public static buildContextBlock(mrkdwnValue: string): ContextBlock {
+    },
+    buildContextBlock(mrkdwnValue) {
         return { type: "context", elements: [ { type: "mrkdwn", text: mrkdwnValue } ] };
-    }
-
-    public static buildSelectOption(text: string, value: string): PlainTextOption {
+    },
+    buildSelectOption(text, value) {
         return { text: this.buildTextElem(text), value: value };
-    }
-
-    public static buildTextElem(text: string): PlainTextElement {
+    },
+    buildTextElem(text) {
         return { type: "plain_text", text, emoji: true };
-    }
-
-    public static buildButton(buttonText: string, value?: string, actionId?: string): Button {
+    },
+    buildButton(buttonText, value, actionId) {
         return {
             type: "button",
             value: value,
             action_id: actionId,
-            text: PollHelpers.buildTextElem(buttonText),
+            text: this.buildTextElem(buttonText),
         };
-    }
-
-    public static buildInputElem(placeHolderText: string, labelText: string, actionId: string): InputBlock {
+    },
+    buildInputElem(placeHolderText, labelText, actionId) {
         return {
             type: "input",
             block_id: `bid_${actionId}`,
             element: {
                 type: "plain_text_input",
                 action_id: actionId,
-                placeholder: PollHelpers.buildTextElem(placeHolderText),
+                placeholder: this.buildTextElem(placeHolderText),
             },
-            label: PollHelpers.buildTextElem(labelText),
+            label: this.buildTextElem(labelText),
         };
     }
 }
