@@ -1,5 +1,5 @@
 import { KnownBlock, Block, PlainTextElement, InputBlock, View, Checkboxes } from "@slack/types";
-import { PollHelpers } from "./PollHelpers";
+import { PollHelpers } from "./PollHelpers.js";
 
 // This will hold all currently opened modals in memory
 // It maps view id to modal object
