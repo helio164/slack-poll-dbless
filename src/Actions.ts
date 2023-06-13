@@ -1,9 +1,9 @@
-import { Poll } from "./Poll";
+import { Poll } from "./Poll.js";
 import { ChatPostMessageArguments, ChatUpdateArguments, WebAPICallResult, WebClient } from "@slack/web-api";
 import { KnownBlock } from "@slack/types";
 import { Request, Response } from "express";
 import * as Sentry from "@sentry/node";
-import { PollModal, ModalMap } from "./PollModal";
+import { PollModal, ModalMap } from "./PollModal.js";
 
 const errorMsg = "An error occurred; please contact the administrators for assistance.";
 
