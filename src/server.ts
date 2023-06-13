@@ -2,7 +2,7 @@ import express from "express";
 import * as dotenv from "dotenv";
 import { urlencoded } from "body-parser";
 import { createMessageAdapter } from "@slack/interactive-messages";
-import { Actions } from "./Actions";
+import { Actions } from "./Actions.js";
 import * as Sentry from "@sentry/node";
 import * as fs from "fs";
 
@@ -45,8 +45,6 @@ slackInteractions.action({ actionId: "add_option" }, actions.onModalAction);
 slackInteractions.action({ actionId: "modal_checkboxes" }, actions.onModalAction);
 slackInteractions.action({ type: Actions.BUTTON_ACTION }, actions.onButtonAction);
 slackInteractions.action({ type: Actions.STATIC_SELECT_ACTION }, actions.onStaticSelectAction);
-
 app.post("/slack/commands", actions.createPollRoute);
 
 app.listen(PORT, () => console.log(`In Or Out server running on ${PORT}`));
-
