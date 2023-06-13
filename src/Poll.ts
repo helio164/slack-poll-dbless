@@ -1,7 +1,5 @@
-import {
-    ActionsBlock, Button, ContextBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock, StaticSelect
-} from "@slack/types";
-import { PollHelpers } from "./PollHelpers";
+import { ActionsBlock, Button, ContextBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock, StaticSelect } from "@slack/types";
+import { PollHelpers } from "./PollHelpers.js";
 import * as Sentry from "@sentry/node";
 
 export class Poll {
