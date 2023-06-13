@@ -1,23 +1,22 @@
-import { ActionsBlock, Button, ContextBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock, StaticSelect } from "@slack/types";
-import { PollHelpers } from "./PollHelpers.js";
-import * as Sentry from "@sentry/node";
+const { ActionsBlock, Button, ContextBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock, StaticSelect } = require("@slack/types");
+const PollHelpers = require("./PollHelpers.js");
+const Sentry = require("@sentry/node");
 
-export class Poll {
-    private getTitleFromMsg(): string {
+module.exports = class Poll {
+    getTitleFromMsg() {
         return ((this.message[0] as SectionBlock).text as MrkdwnElement).text;
     }
-    private checkIfMsgContains(value: string): boolean {
+    checkIfMsgContains(value) {
         return this.getTitleFromMsg().includes(value);
     }
-    static slashCreate(author: string, parameters: string[]): Poll {
+    static slashCreate(author, parameters) {
         if (process.env.SENTRY_DSN) {
             Sentry.configureScope(scope => {
                 scope.setUser({ username: author });
                 scope.setExtra("parameters", parameters);
             });
         }
-
-        let message: KnownBlock[] = [];
+        let message = [];
         const optionArray = parameters[0].split(" ");
         // Don't have to worry about the difference in comparisons if there is one or two options
         if (optionArray.length === 1) optionArray.push(" ");
@@ -32,22 +31,22 @@ export class Poll {
 
         const titleBlock = PollHelpers.buildSectionBlock(mrkdwnValue);
         message.push(titleBlock, PollHelpers.buildContextBlock(`Asked by: ${author}`));
-        const actionBlocks: ActionsBlock[] = [{ type: "actions", elements: [] }];
+        const actionBlocks = [{ type: "actions", elements: [] }];
         let actionBlockCount = 0;
         // Construct all the buttons
         const start = titleBlock.text!.text === parameters[0] ? 1 : 2;
         for (let i = start; i < parameters.length; i++) {
             if (i % 5 === 0) {
-                const newActionBlock: ActionsBlock = { type: "actions", elements: [] };
+                const newActionBlock = { type: "actions", elements: [] };
                 actionBlocks.push(newActionBlock);
                 actionBlockCount++;
             }
             // We set value to empty string so that it is always defined
-            const button: Button = PollHelpers.buildButton(parameters[i], " ");
+            const button = PollHelpers.buildButton(parameters[i], " ");
             actionBlocks[actionBlockCount].elements.push(button);
         }
         // The various poll options
-        const selection: StaticSelect = {
+        const selection = {
             type: "static_select",
             placeholder: PollHelpers.buildTextElem("Poll Options"),
             options: [
@@ -64,12 +63,7 @@ export class Poll {
         // Create the poll based on the intial message
         return new Poll(message);
     }
-
-    private message: KnownBlock[] = [];
-    private multiple = false;
-    private anonymous = false;
-    private isLocked = false;
-    constructor(message: KnownBlock[]) {
+    constructor(message) {
         this.message = message;
         // Since its databaseless the way we know if it is anonymous or multiple is by parsing the title
         this.multiple = this.checkIfMsgContains("(Multiple Answers)");
@@ -77,7 +71,6 @@ export class Poll {
         // If there's no buttons then the poll is locked
         this.isLocked = this.message[3].type === "divider";
     }
-
     public getBlocks(): KnownBlock[] {
         let str = JSON.stringify(this.message);
         str = str.replace("&lt;", "<")
